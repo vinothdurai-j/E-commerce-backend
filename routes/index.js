@@ -4,5 +4,6 @@ const router = express.Router()
 router.use('/v1', require('../models/V1/user/router/index'))
 router.use('/v1',require('../models/V1/products/router/index'))
 router.use('/v1',require('../models/V1/admin/router/index'))
+router.use('/v1',require('../models/V1/categories/router/index'))
 
 module.exports = router
