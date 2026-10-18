@@ -123,14 +123,16 @@ module.exports.login = async ({ identifier, password }) => {
         }
 
         const token = jwt.sign({
-            userId: user._id,
-            email: user.email
+              id: user._id,
+            email: user.email,
+            role: user.role
+            
         },
             process.env.JWT_SECRET, {
             expiresIn: '1h'
         })
 
-        return { token, user: { id: user._id, username: user.username, email: user.email } }
+        return { token, user: { id: user._id, username: user.username, email: user.email,role:user.role } }
     } catch (err) {
         console.error(err)
         throw err
