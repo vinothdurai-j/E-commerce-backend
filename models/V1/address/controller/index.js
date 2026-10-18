@@ -33,7 +33,7 @@ module.exports.addAddress = async (req, res) => {
 module.exports.getMyAddresses = async (req, res) => {
     try {
         const addresses = await service.getMyAddresses(req.user.id)
-
+    console.log("add😑",addresses)
         return res.status(200).json({
             message: 'Fetched addresses successfully',
             count: addresses.length,
@@ -47,10 +47,15 @@ module.exports.getMyAddresses = async (req, res) => {
 module.exports.getAddressById = async (req, res) => {
     try {
         const address = await service.getAddressById(req.user.id, req.params.id)
+        
+           
 
         if (!address) {
+            
             return res.status(404).json({ 
-                message: 'Address not found' })
+            
+                message: 'Address not found😑' })
+                 
         }
 
         return res.status(200).json({

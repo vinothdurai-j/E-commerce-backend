@@ -50,4 +50,4 @@ const schema = new mongoose.Schema({
     timestamps: true
 })
 
-module.exports.Model = mongoose.model('ModelName', schema)
+module.exports.Model = mongoose.model('User', schema)
