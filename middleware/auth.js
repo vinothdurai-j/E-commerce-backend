@@ -37,3 +37,22 @@ module.exports.authenticate = (req, res, next) => {
         })
     }
 }
+
+module.exports.isAdmin=(req,res,next)=>{
+    if(!req.user || req.user.role !== 'admin'){
+        return res.status(403).json({
+            message:"Admin Access Only"
+        })
+    }
+    next()
+}
+
+
+module.exports.isUser=(req,res,next)=>{
+    if(!req.user || req.user.role !== 'user'){
+        return res.status(403).json({
+            message:"User Access only"
+        })
+    }
+    next()
+}

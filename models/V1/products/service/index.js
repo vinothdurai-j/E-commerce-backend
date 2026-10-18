@@ -28,7 +28,7 @@ module.exports.getProductById =async(id)=>{
         return product
 
     }catch(err){
-        thr
+        throw err
     }
 }
 
