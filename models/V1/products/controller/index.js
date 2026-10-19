@@ -20,12 +20,15 @@ module.exports.createProduct = async (req, res) => {
             data:product
         })
     }
-    catch(err){
-        return res.status(500).json({
-            message:'Internal server error',
-            error:err.message
-        })
+    catch (err) {
+    if (err.code === 11000) {
+        return res.status(409).json({ message: 'SKU already exists' })
     }
+    if (err.name === 'CastError') {
+        return res.status(400).json({ message: `Invalid ${err.path}` })
+    }
+    return res.status(err.statusCode || 500).json({ message: err.message })
+}
 
 
 
@@ -40,11 +43,15 @@ module.exports.getAllProducts = async(req,res)=>{
             message:"Fetched all products successfully",
             data:products
         })
-    }catch(err){
-        return res.status(500).json({
-            message:err.message
-        })
+    }catch (err) {
+    if (err.code === 11000) {
+        return res.status(409).json({ message: 'SKU already exists' })
     }
+    if (err.name === 'CastError') {
+        return res.status(400).json({ message: `Invalid ${err.path}` })
+    }
+    return res.status(err.statusCode || 500).json({ message: err.message })
+}
 }
 
 
@@ -68,11 +75,15 @@ module.exports.getProductById = async(req,res)=>{
             message:"Fetched product successfully",
             data:product
         })
-    }catch(err){
-        return res.status(500).json({
-            message:err.message
-        })
+    }catch (err) {
+    if (err.code === 11000) {
+        return res.status(409).json({ message: 'SKU already exists' })
     }
+    if (err.name === 'CastError') {
+        return res.status(400).json({ message: `Invalid ${err.path}` })
+    }
+    return res.status(err.statusCode || 500).json({ message: err.message })
+}
 }
 
 module.exports.updateProduct = async(req,res)=>{
@@ -104,11 +115,15 @@ module.exports.updateProduct = async(req,res)=>{
             data:product
         })
     } 
-    catch(err){
-        return res.status(500).json({
-            message:err.message
-        })
+    catch (err) {
+    if (err.code === 11000) {
+        return res.status(409).json({ message: 'SKU already exists' })
     }
+    if (err.name === 'CastError') {
+        return res.status(400).json({ message: `Invalid ${err.path}` })
+    }
+    return res.status(err.statusCode || 500).json({ message: err.message })
+}
 }
 
 
@@ -134,11 +149,15 @@ module.exports.deleteProduct = async(req,res)=>{
         data:deletedProduct
     })
   }  
-  catch(err){
-    return res.status(500).json({
-        message:err.message
-    })
-  }
+  catch (err) {
+    if (err.code === 11000) {
+        return res.status(409).json({ message: 'SKU already exists' })
+    }
+    if (err.name === 'CastError') {
+        return res.status(400).json({ message: `Invalid ${err.path}` })
+    }
+    return res.status(err.statusCode || 500).json({ message: err.message })
+}
 }
 
 module.exports.toggleProductStatus = async(req,res)=>{
@@ -164,11 +183,15 @@ module.exports.toggleProductStatus = async(req,res)=>{
                 message:`Product status toggled to ${productStatus.status} successfully`,
                 data:productStatus
             })
-    }catch(err){
-        return res.status(500).json({
-            message:err.message
-        })
+    }catch (err) {
+    if (err.code === 11000) {
+        return res.status(409).json({ message: 'SKU already exists' })
     }
+    if (err.name === 'CastError') {
+        return res.status(400).json({ message: `Invalid ${err.path}` })
+    }
+    return res.status(err.statusCode || 500).json({ message: err.message })
+}
 }
 
 module.exports.filterProducts =async(req,res)=>{
@@ -195,10 +218,13 @@ if (filteredProducts.length === 0) {
               count: filteredProducts.length,
             data:filteredProducts
         })
-    }catch(err){
-        return res.status(500).json({
-            message:err.message
-        })
-
+    }catch (err) {
+    if (err.code === 11000) {
+        return res.status(409).json({ message: 'SKU already exists' })
     }
+    if (err.name === 'CastError') {
+        return res.status(400).json({ message: `Invalid ${err.path}` })
+    }
+    return res.status(err.statusCode || 500).json({ message: err.message })
+}
 }

@@ -12,10 +12,12 @@ const createValidation = (data) => {
             'any.required': 'Description is required'
         }),
 
-        category: Joi.string().trim().required().messages({
-            'string.empty': 'Category is required',
-            'any.required': 'Category is required'
-        }),
+  category: Joi.string().hex().length(24).required().messages({
+    'string.empty': 'Category is required',
+    'any.required': 'Category is required',
+    'string.length': 'Invalid category id',
+    'string.hex': 'Invalid category id'
+}),
 
         brand: Joi.string().trim().allow(''),
 
@@ -63,9 +65,10 @@ const updateProductValidation = (data) => {
             'string.empty': 'Description cannot be empty'
         }),
 
-        category: Joi.string().trim().messages({
-            'string.empty': 'Category cannot be empty'
-        }),
+  category: Joi.string().hex().length(24).messages({
+    'string.length': 'Invalid category id',
+    'string.hex': 'Invalid category id'
+}),
 
         brand: Joi.string().trim().allow(''),
 
@@ -107,7 +110,10 @@ const updateProductValidation = (data) => {
 
 const filterValidation = (data) => {
     const schema = Joi.object({
-        category: Joi.string().trim(),
+      category: Joi.string().hex().length(24).messages({
+    'string.length': 'Invalid category id',
+    'string.hex': 'Invalid category id'
+}),
         brand: Joi.string().trim(),
         status: Joi.string().valid('active', 'inactive').messages({
             'any.only': 'Status must be active or inactive'
