@@ -10,6 +10,6 @@ router.use('/v1',require('../models/V1/cart/router/index'))
 router.use('/v1',require('../models/V1/orders/router/index'))
 router.use('/v1',require('../models/V1/reviews/router/index'))
 router.use('/v1',require('../models/V1/wishlist/router/index'))
-
+router.use('/v1',require('../models/V1/coupons/router/index'))
 
 module.exports = router

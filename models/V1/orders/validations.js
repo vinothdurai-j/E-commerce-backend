@@ -9,6 +9,7 @@ const placeOrderValidation = (data) => {
         paymentMethod: Joi.string().valid('cod', 'online').default('cod').messages({
             'any.only': 'Payment method must be cod or online',
         }),
+        couponCode: Joi.string().trim().allow(''),
     })
     return schema.validate(data)
 }

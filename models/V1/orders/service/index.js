@@ -2,8 +2,9 @@ const Order = require('../model/index')
 const Cart = require('../../cart/model/index')
 const Address = require('../../address/model/index')
 const { Model: Product } = require('../../products/model/index')
+const couponService = require('../../coupons/service/index')
 
-const SHIPPING_FEE = 0 
+const SHIPPING_FEE = 0
 
 const throwError = (message, statusCode) => {
     const error = new Error(message)
@@ -28,11 +29,13 @@ const ALLOWED_TRANSITIONS = {
     cancelled: [],
 }
 
-module.exports.placeOrder = async (userId, { addressId, paymentMethod }) => {
-    const reducedItems = [] 
+module.exports.placeOrder = async (userId, { addressId, paymentMethod, couponCode }) => {
+    const reducedItems = []
+    let appliedCoupon = null
+    let couponRedeemed = false
 
     try {
-        // 1. Address 
+        // 1. Address
         const address = await Address.findOne({ _id: addressId, user: userId })
         if (!address) throwError('Address not found', 404)
 
@@ -61,22 +64,41 @@ module.exports.placeOrder = async (userId, { addressId, paymentMethod }) => {
             })
         }
 
-        // 4. Stock 
+        // 4. Totals + coupon check (stock kuraikkaradhukku munnaadi)
+        const itemsTotal = orderItems.reduce((sum, i) => sum + i.subtotal, 0)
+
+        let discountAmount = 0
+        if (couponCode) {
+            const result = await couponService.checkCoupon(couponCode, userId, itemsTotal)
+            appliedCoupon = result.coupon
+            discountAmount = result.discount
+        }
+
+        // 5. Stock kuraikkaradhu (atomic)
         for (const item of orderItems) {
             const updated = await Product.findOneAndUpdate(
                 { _id: item.product, status: 'active', stock: { $gte: item.quantity } },
                 { $inc: { stock: -item.quantity } }
             )
             if (!updated) {
-                await restoreStock(reducedItems) // munnaadi kuraichadhu thirumba
+                await restoreStock(reducedItems)
                 throwError(`${item.name} is out of stock`, 400)
             }
             reducedItems.push(item)
         }
 
-        // 5. Order create
-        const itemsTotal = orderItems.reduce((sum, i) => sum + i.subtotal, 0)
+        // 6. Coupon redeem
+        if (appliedCoupon) {
+            try {
+                await couponService.redeemCoupon(appliedCoupon)
+                couponRedeemed = true
+            } catch (e) {
+                await restoreStock(reducedItems)
+                throw e
+            }
+        }
 
+        // 7. Order create
         let order
         try {
             order = await Order.create({
@@ -96,15 +118,18 @@ module.exports.placeOrder = async (userId, { addressId, paymentMethod }) => {
                 },
                 itemsTotal,
                 shippingFee: SHIPPING_FEE,
-                totalAmount: itemsTotal + SHIPPING_FEE,
+                discountAmount,
+                couponCode: appliedCoupon ? appliedCoupon.code : undefined,
+                totalAmount: itemsTotal - discountAmount + SHIPPING_FEE,
                 paymentMethod,
             })
         } catch (createErr) {
-            await restoreStock(reducedItems) // order fail aana stock thirumba
+            await restoreStock(reducedItems)
+            if (couponRedeemed) await couponService.releaseCoupon(appliedCoupon.code)
             throw createErr
         }
 
-        // 6. Cart clear
+        // 8. Cart clear
         cart.items = []
         await cart.save()
 
@@ -145,6 +170,7 @@ module.exports.cancelOrder = async (userId, id) => {
         await order.save()
 
         await restoreStock(order.items)
+        await couponService.releaseCoupon(order.couponCode)
         return order
     } catch (err) {
         throw err
@@ -186,13 +212,14 @@ module.exports.updateStatus = async (id, status) => {
 
         if (status === 'delivered') {
             order.deliveredAt = new Date()
-            if (order.paymentMethod === 'cod') order.paymentStatus = 'paid' // COD: deliver aana aprom paid
+            if (order.paymentMethod === 'cod') order.paymentStatus = 'paid'
         }
 
         if (status === 'cancelled') {
             order.cancelledAt = new Date()
             if (order.paymentStatus === 'paid') order.paymentStatus = 'refunded'
             await restoreStock(order.items)
+            await couponService.releaseCoupon(order.couponCode)
         }
 
         await order.save()

@@ -52,6 +52,8 @@ const orderSchema = new mongoose.Schema(
         },
         cancelledAt: Date,
         deliveredAt: Date,
+        couponCode: { type: String },
+discountAmount: { type: Number, default: 0 },
     },
     { timestamps: true }
 )
