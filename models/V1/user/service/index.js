@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken')
 const sendEmail =require('../../../../utils/sendEmail')
 const {welcomeEmail,otpEmail} =require('../../../../utils/emailTemplates')
 const crypto = require('crypto')
+const bcrypt = require('bcrypt')
 module.exports.create = async (data) => {
     try {
         const newDoc = new Model(data)
@@ -61,7 +62,8 @@ module.exports.register = async (data) => {
     console.log("1. Register started")
     console.log("2. Email from request:", userData.email)
 
-    const newDoc = new Model(userData)
+    const hashedPassword = await bcrypt.hash(userData.password, 10)
+const newDoc = new Model({ ...userData, password: hashedPassword })
 
     const savedData = await newDoc.save()
 
@@ -96,49 +98,35 @@ module.exports.register = async (data) => {
 //Login User
 
 module.exports.login = async ({ identifier, password }) => {
-
     try {
         const user = await Model.findOne({
-            $or: [
-                {
-                    email: identifier
-                },
-                {
-                    mobile: identifier
-                }
-            ]
-        })
+            $or: [{ email: identifier.toLowerCase() }, { mobile: identifier }],
+        }).select('+password')
 
-        if (!user) {
-
-            const error = new Error("User not found")
-            error.statusCode = 404
-            throw error
-        }
-
-        if (user.password !== password) {
-            const error = new Error("Invalid password")
+        const isMatch = user && (await bcrypt.compare(password, user.password))
+        if (!isMatch) {
+            const error = new Error('Invalid credentials')
             error.statusCode = 401
             throw error
         }
 
-        const token = jwt.sign({
-              id: user._id,
-            email: user.email,
-            role: user.role
-            
-        },
-            process.env.JWT_SECRET, {
-            expiresIn: '1h'
-        })
+        if (user.status === 'blocked') {
+            const error = new Error('Your account is blocked. Contact support')
+            error.statusCode = 403
+            throw error
+        }
 
-        return { token, user: { id: user._id, username: user.username, email: user.email,role:user.role } }
+        const token = jwt.sign(
+            { id: user._id, email: user.email, role: user.role },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        )
+
+        return { token, user: { id: user._id, username: user.username, email: user.email, role: user.role } }
     } catch (err) {
-        console.error(err)
         throw err
     }
 }
-
 
 const hashOtp = (otp) => crypto.createHash('sha256').update(otp).digest('hex')
 
@@ -197,7 +185,7 @@ module.exports.resetPassword = async ({ email, otp, password }) => {
         }
 
         // OTP correct, password update
-        user.password = password
+user.password = await bcrypt.hash(password, 10),
         user.resetOtp = undefined
         user.resetOtpExpires = undefined
         user.resetOtpAttempts = 0

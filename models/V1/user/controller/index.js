@@ -65,9 +65,9 @@ module.exports.getuserById = async (req, res) => {
             })
         }
 
-        if (req.user.userId !== id) {
+        if (req.user.id !== id) {
             return res.status(403).json({
-                message: "User token is required "
+                message: "User token is required🚪 "
             })
         }
         const data = await service.getuserById(id)
@@ -103,7 +103,7 @@ module.exports.update = async (req, res) => {
             })
         }
 
-        if (req.user.userId !== id) {
+        if (req.user.id !== id) {
             return res.status(403).json({
                 message: "user token is required"
             })
@@ -149,12 +149,12 @@ module.exports.delete = async (req, res) => {
             })
         }
 
-        if (req.user.userId !== id) {
+        if (req.user.id !== id) {
             return res.status(403).json({
                 message: "User token is required"
             })
         }
-        console.log("Token User ID:", req.user.userId)
+        console.log("Token User ID:", req.user.id)
         console.log("URL User ID:", id)
         const data = await service.delete(id)
 

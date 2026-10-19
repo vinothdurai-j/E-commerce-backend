@@ -30,6 +30,11 @@ const schema = new mongoose.Schema({
         required:true,
         default:'user'
     },
+    status: {
+    type: String,
+    enum: ['active', 'blocked'],
+    default: 'active'
+},
      resetOtp: {
         type: String,
         select: false
