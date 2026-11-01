@@ -107,3 +107,22 @@ module.exports.toggleCategoryStatus = async (id) => {
         throw err
     }
 }
+
+
+
+module.exports.getCategoryTree = async (onlyActive = true) => {
+    const query = onlyActive ? { status: 'active' } : {}
+    const list = await Category.find(query).sort({ name: 1 }).lean()
+
+    const children = {}
+    for (const c of list) {
+        if (c.parent) (children[String(c.parent)] ||= []).push(c)
+    }
+
+    return list
+        .filter((c) => !c.parent)
+        .map((root) => ({
+            ...root,
+            items: (children[String(root._id)] || []).map(({ _id, name, slug }) => ({ _id, name, slug })),
+        }))
+}

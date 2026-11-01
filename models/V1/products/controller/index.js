@@ -1,6 +1,8 @@
 const service =require('../service/index')
 
-const { createValidation,updateProductValidation,filterValidation} = require('../validations')
+const { createValidation,updateProductValidation,filterValidation,
+     getUploadUrlsValidation, confirmImagesValidation, deleteImageValidation,
+} = require('../validations')
 
 module.exports.createProduct = async (req, res) => {
     try {
@@ -227,4 +229,51 @@ if (filteredProducts.length === 0) {
     }
     return res.status(err.statusCode || 500).json({ message: err.message })
 }
+}
+
+
+
+module.exports.getUploadUrls = async (req, res) => {
+    try {
+        const { error, value } = getUploadUrlsValidation(req.body)
+        if (error) return res.status(400).json({ message: error.details[0].message })
+
+        const data = await service.getUploadUrls(req.params.id, value.files)
+        if (!data) return res.status(404).json({ message: 'Product not found' })
+
+        return res.status(200).json({ message: 'Upload URLs generated', data })
+    } catch (err) {
+        if (err.name === 'CastError') return res.status(400).json({ message: `Invalid ${err.path}` })
+        return res.status(err.statusCode || 500).json({ message: err.message })
+    }
+}
+
+module.exports.confirmImages = async (req, res) => {
+    try {
+        const { error, value } = confirmImagesValidation(req.body)
+        if (error) return res.status(400).json({ message: error.details[0].message })
+
+        const product = await service.confirmImages(req.params.id, value.imageUrls)
+        if (!product) return res.status(404).json({ message: 'Product not found' })
+
+        return res.status(200).json({ message: 'Images added successfully', data: product })
+    } catch (err) {
+        if (err.name === 'CastError') return res.status(400).json({ message: `Invalid ${err.path}` })
+        return res.status(err.statusCode || 500).json({ message: err.message })
+    }
+}
+
+module.exports.deleteImage = async (req, res) => {
+    try {
+        const { error, value } = deleteImageValidation(req.body)
+        if (error) return res.status(400).json({ message: error.details[0].message })
+
+        const product = await service.deleteImage(req.params.id, value.imageUrl)
+        if (!product) return res.status(404).json({ message: 'Product not found' })
+
+        return res.status(200).json({ message: 'Image deleted successfully', data: product })
+    } catch (err) {
+        if (err.name === 'CastError') return res.status(400).json({ message: `Invalid ${err.path}` })
+        return res.status(err.statusCode || 500).json({ message: err.message })
+    }
 }

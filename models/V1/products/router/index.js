@@ -11,4 +11,15 @@ router.put('/updateProduct/:id',authenticate,isAdmin,controller.updateProduct)
 router.delete('/deleteProduct/:id',authenticate,isAdmin,controller.deleteProduct)
 router.patch('/toggleProductStatus/:id',authenticate,isAdmin,controller.toggleProductStatus)
 router.get('/filterProducts',controller.filterProducts)
+
+
+
+
+router.post('/getUploadUrls/:id', authenticate, isAdmin, controller.getUploadUrls)
+router.post('/confirmImages/:id', authenticate, isAdmin, controller.confirmImages)
+router.delete('/deleteImage/:id', authenticate, isAdmin, controller.deleteImage)
+
+
+
+
 module.exports=router

@@ -133,3 +133,15 @@ module.exports.toggleCategoryStatus = async (req, res) => {
         return handleError(res, err)
     }
 }
+
+
+module.exports.getCategoryTree = async (req, res) => {
+     console.log("getCategoryTree hit")
+    try {
+        const onlyActive = !(req.user && req.user.role === 'admin')
+        const data = await service.getCategoryTree(onlyActive)
+        return res.status(200).json({ count: data.length, data })
+    } catch (err) {
+        return handleError(res, err)
+    }
+}

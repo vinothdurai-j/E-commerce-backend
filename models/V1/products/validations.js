@@ -134,5 +134,36 @@ const filterValidation = (data) => {
    
 
 
+const getUploadUrlsValidation = (data) => {
+    const schema = Joi.object({
+        files: Joi.array()
+            .items(
+                Joi.object({
+                    contentType: Joi.string().valid('image/jpeg', 'image/png', 'image/webp').required().messages({
+                        'any.only': 'Only JPG, PNG, WEBP images are allowed',
+                    }),
+                })
+            )
+            .min(1)
+            .max(5)
+            .required(),
+    })
+    return schema.validate(data)
+}
 
-module.exports = { createValidation , updateProductValidation,filterValidation}  
+const confirmImagesValidation = (data) => {
+    const schema = Joi.object({
+        imageUrls: Joi.array().items(Joi.string().uri()).min(1).max(5).required(),
+    })
+    return schema.validate(data)
+}
+
+const deleteImageValidation = (data) => {
+    const schema = Joi.object({
+        imageUrl: Joi.string().uri().required(),
+    })
+    return schema.validate(data)
+}
+
+
+module.exports = { createValidation , updateProductValidation,filterValidation, getUploadUrlsValidation, confirmImagesValidation, deleteImageValidation,}  

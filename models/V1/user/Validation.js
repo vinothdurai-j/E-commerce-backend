@@ -33,7 +33,7 @@ const createValidation = (data) => {
 
 const updateValidation = (data) => {
     const schema = Joi.object({
-        name: Joi.string().trim(),
+        username: Joi.string().trim(),
 
         email: Joi.string().email().trim(),
 
