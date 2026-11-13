@@ -14,7 +14,12 @@ module.exports.welcomeEmail = (name) => ({
 
 
 
-module.exports.otpEmail = (name, otp) => ({
+
+
+
+
+
+module.exports.otpEmail = (name,otp) => ({
 
 
 
