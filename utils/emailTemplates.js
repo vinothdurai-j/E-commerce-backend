@@ -21,11 +21,7 @@ module.exports.welcomeEmail = (name) => ({
 
 module.exports.otpEmail = (name,otp) => ({
 
-
-
-
-  
-    subject: "Your Password Reset OTP",
+   subject: "Your Password Reset OTP",
     html: `
     <div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:24px;border:1px solid #e5e5e5;border-radius:8px">
         <h2 style="color:#333;margin-top:0">Password Reset</h2>
